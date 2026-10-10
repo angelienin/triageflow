@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hospital check-in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#F3F7F6;--panel:#FFFFFF;--ink:#14343B;--muted:#5E7A7F;--line:#D9E4E2;--brand:#1F6F78;--brand-ink:#FFFFFF;--tint:#E3F0EE;--free:#E3F0EE;--busy:#14343B;--busy-ink:#EAF4F2;--r1:#2F9E73;--r2:#E0A526;--r3:#D6493F;--field:#F8FBFA}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1E22;--panel:#152A2F;--ink:#E4F0EE;--muted:#8FAAAD;--line:#244148;--brand:#5CB8C0;--brand-ink:#0E1E22;--tint:#1C373D;--free:#1C373D;--busy:#E4F0EE;--busy-ink:#14343B;--field:#112328}}
+:root[data-theme="dark"]{--bg:#0E1E22;--panel:#152A2F;--ink:#E4F0EE;--muted:#8FAAAD;--line:#244148;--brand:#5CB8C0;--brand-ink:#0E1E22;--tint:#1C373D;--free:#1C373D;--busy:#E4F0EE;--busy-ink:#14343B;--field:#112328}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Instrument Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:Newsreader,Georgia,serif;font-weight:600;margin:0;letter-spacing:-.01em}
+header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding:28px clamp(16px,4vw,48px) 20px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(26px,4vw,36px)}
+.sub{color:var(--muted);margin:2px 0 0}
+.stats{display:flex;gap:28px;flex-wrap:wrap}
+.stat b{display:block;font:600 28px Newsreader,Georgia,serif;line-height:1}
+.stat span{color:var(--muted);font-size:13px}
+main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:24px;padding:24px clamp(16px,4vw,48px) 48px;max-width:1280px;margin:0 auto}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+section+section{margin-top:24px}
+h2{font-size:22px;margin-bottom:14px}
+.col{min-width:0}
+label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin:14px 0 5px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.triage{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.triage input{position:absolute;opacity:0;width:0}
+.triage label{margin:0;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink);background:var(--field);display:flex;align-items:center;justify-content:center;gap:6px}
+.triage label::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+.triage input:checked+label{border-color:var(--brand);background:var(--tint);font-weight:600}
+.triage input:focus-visible+label{outline:2px solid var(--brand)}
+.mental{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:6px}
+.mental input{position:absolute;opacity:0;width:0}
+.mental label{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 7px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink);background:var(--field);font-size:12px;font-weight:500;text-align:center;line-height:1.2}
+.mental svg{width:36px;height:36px;color:var(--c);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mental input:checked+label{background:var(--tint);border-color:var(--c);box-shadow:0 0 0 1px var(--c);font-weight:600}
+.mental input:focus-visible+label{outline:2px solid var(--brand);outline-offset:1px}
+.ai{margin-top:14px;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:12px 14px;background:var(--tint)}
+.pb{display:grid;grid-template-columns:62px 1fr 36px;gap:8px;align-items:center;font-size:12.5px;margin-top:6px}
+.pb i{height:6px;border-radius:3px;background:var(--line);display:block;overflow:hidden}
+.pb u{display:block;height:100%;background:var(--c)}
+.ai .ghost{margin-top:10px}
+section[hidden]{display:none}
+section[hidden]+section{margin-top:0}
+#alertsSec{border-left:4px solid var(--r2)}
+.al{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.al:first-child{border-top:0}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--r2);color:#14343B;margin-left:4px}
+.chk{display:flex;align-items:center;gap:10px;margin:14px 0 0;color:var(--ink);font-size:14px;font-weight:500;cursor:pointer}
+.chk input{width:18px;height:18px;padding:0;accent-color:var(--brand);flex:none}
+#ageNote{color:var(--r2);font-weight:500}
+.pain{display:grid;grid-template-columns:repeat(11,1fr);gap:4px}
+.pain input{position:absolute;opacity:0;width:0}
+.pain label{margin:0;text-align:center;padding:9px 0 6px;border:1px solid var(--line);border-bottom:4px solid var(--c);border-radius:6px;cursor:pointer;color:var(--ink);background:var(--field);font-weight:500}
+.pain input:checked+label{background:var(--tint);border-color:var(--c);font-weight:700;box-shadow:0 0 0 1px var(--c)}
+.pain input:focus-visible+label{outline:2px solid var(--brand);outline-offset:1px}
+.pscale{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+#painTxt{color:var(--ink);font-weight:600}
+.btn{font:600 15px "Instrument Sans",sans-serif;background:var(--brand);color:var(--brand-ink);border:0;border-radius:9px;padding:12px 18px;cursor:pointer;width:100%;margin-top:20px}
+.btn:hover{filter:brightness(1.08)}
+.ghost{background:transparent;color:var(--brand);border:1px solid var(--line);width:auto;margin:0;padding:6px 12px;font-size:13px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.err{color:var(--r3);font-size:13px;min-height:18px;margin:10px 0 0}
+.beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.bay{font-size:13px;color:var(--muted);margin:16px 0 8px;font-weight:500}
+.bay:first-of-type{margin-top:0}
+.bed{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--free);text-align:left;font:inherit;color:var(--ink);cursor:pointer;min-height:76px}
+.bed.busy{background:var(--busy);color:var(--busy-ink);border-color:var(--busy);cursor:default}
+.bed.pick{outline:2px solid var(--brand);outline-offset:2px}
+.bed strong{display:block;font:600 17px Newsreader,Georgia,serif}
+.bed small{display:block;opacity:.85;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nurses{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.nurse{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.nurse b{display:block}
+.nurse small{color:var(--muted)}
+.meter{display:flex;gap:4px;margin-top:8px}
+.meter i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.meter i.on{background:var(--brand)}
+.meter.full i.on{background:var(--r2)}
+.pt{display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.pt:first-of-type{border-top:0}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.pt b{font-weight:600}
+.pt .meta{color:var(--muted);font-size:13.5px;grid-column:2}
+.empty{color:var(--muted);padding:8px 0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Hospital check-in</h1>
+    <p class="sub">Medical-surgical unit, 3 West</p>
+  </div>
+  <div class="stats" aria-live="polite">
+    <div class="stat"><b id="sIn">0</b><span>Patients in hospital</span></div>
+    <div class="stat"><b id="sBeds">0</b><span>Beds open</span></div>
+    <div class="stat"><b id="sNurse">0</b><span>Nurses with capacity</span></div>
+    <div class="stat"><b id="sAI">&ndash;</b><span>AI matched nurse</span></div>
+  </div>
+</header>
+
+<main>
+  <div class="col">
+    <section>
+      <h2>Check in a patient</h2>
+      <div id="formWrap">
+        <label for="name">Full name</label>
+        <input id="name" autocomplete="off" placeholder="e.g. Maria Alvarez">
+        <div class="row">
+          <div><label for="dob">Date of birth</label><input id="dob" type="date"></div>
+          <div><label for="mrn">MRN (optional)</label><input id="mrn" autocomplete="off" placeholder="Auto-generated"></div>
+        </div>
+        <label class="chk" for="sr"><input type="checkbox" id="sr"> Patient is 65 or older</label>
+        <p class="hint" id="ageNote" aria-live="polite"></p>
+        <label for="reason">Reason for visit</label>
+        <input id="reason" autocomplete="off" placeholder="e.g. Post-op monitoring">
+        <label id="painLbl">Pain level <span id="painTxt"></span></label>
+        <div class="pain" id="pain" role="radiogroup" aria-labelledby="painLbl"></div>
+        <div class="pscale"><span>No pain</span><span>Worst possible</span></div>
+        <label id="mentalLbl">Mental status <span id="mentalTxt"></span></label>
+        <div class="mental" id="mental" role="radiogroup" aria-labelledby="mentalLbl"></div>
+        <label id="triLbl">Acuity</label>
+        <div class="triage" role="radiogroup" aria-labelledby="triLbl">
+          <input type="radio" name="tri" id="t1" value="1" checked><label for="t1" style="--c:var(--r1)">Routine</label>
+          <input type="radio" name="tri" id="t2" value="2"><label for="t2" style="--c:var(--r2)">Urgent</label>
+          <input type="radio" name="tri" id="t3" value="3"><label for="t3" style="--c:var(--r3)">Critical</label>
+        </div>
+        <div class="ai" id="ai" aria-live="polite"></div>
+        <label for="nurseSel">Nurse</label>
+        <select id="nurseSel"></select>
+        <label for="bedSel">Bed</label>
+        <select id="bedSel"></select>
+        <p class="hint">Leave both on Auto to assign the least-busy nurse and the first open bed. Critical patients go to Bay A, closest to the nurses' station.</p>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn" id="go">Check in and assign</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section id="alertsSec" hidden>
+      <h2>Nurse alerts</h2>
+      <div id="alerts" aria-live="polite"></div>
+    </section>
+    <section>
+      <h2>Beds</h2>
+      <div id="beds"></div>
+    </section>
+    <section>
+      <h2>Nurses on shift</h2>
+      <div class="nurses" id="nurses"></div>
+    </section>
+    <section>
+      <h2>Patients in hospital</h2>
+      <div id="pts"></div>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+var MAXLOAD=4;
+var NURSES=[{id:'n1',name:'Priya Nair, RN'},{id:'n2',name:'Daniel Okafor, RN'},{id:'n3',name:'Hannah Weiss, RN'},{id:'n4',name:'Luis Ortega, RN'},{id:'n5',name:'Grace Kim, RN'}];
+var BEDS=[];['A','B'].forEach(function(b){for(var i=1;i<=6;i++)BEDS.push({id:b+i,bay:b})});
+var LEVELS={1:{t:'Routine',c:'var(--r1)'},2:{t:'Urgent',c:'var(--r2)'},3:{t:'Critical',c:'var(--r3)'}};
+var patients=[];
+try{var s=localStorage.getItem('ward3w');if(s)patients=JSON.parse(s)||[]}catch(e){}
+var picked='';
+
+var FACE='<circle cx="20" cy="20" r="17"/>';
+var MENTAL=[
+{k:'alert',t:'Alert',c:'var(--r1)',d:'awake and aware',g:'<circle cx="14" cy="17" r="1.6" fill="currentColor"/><circle cx="26" cy="17" r="1.6" fill="currentColor"/><path d="M13 25q7 6 14 0"/>'},
+{k:'confused',t:'Confused',c:'var(--r2)',d:'unsure, muddled',g:'<circle cx="14" cy="18" r="1.6" fill="currentColor"/><circle cx="26" cy="18" r="1.6" fill="currentColor"/><path d="M10 12l7 2M23 13l7-3"/><path d="M12 28q2-3 4 0t4 0t4 0"/>'},
+{k:'disoriented',t:'Disoriented',c:'var(--r2)',d:'not sure of person, place or time',g:'<circle cx="14" cy="17" r="3.5"/><circle cx="14" cy="17" r="1" fill="currentColor"/><circle cx="26" cy="17" r="3.5"/><circle cx="26" cy="17" r="1" fill="currentColor"/><circle cx="20" cy="28" r="2.4"/>'},
+{k:'drowsy',t:'Drowsy',c:'var(--r2)',d:'responds to voice',g:'<path d="M10 17q4 4 8 0M22 17q4 4 8 0"/><path d="M15 27h10"/>'},
+{k:'unresponsive',t:'Unresponsive',c:'var(--r3)',d:'responds to pain only or not at all',g:'<path d="M11 14l6 6M17 14l-6 6M23 14l6 6M29 14l-6 6"/><path d="M14 28h12"/>'}];
+function mentalOf(k){return MENTAL.filter(function(m){return m.k===k})[0]}
+function buildMental(){var h='';MENTAL.forEach(function(m,i){h+='<input type="radio" name="mental" id="mn'+i+'" value="'+m.k+'"'+(i===0?' checked':'')+'><label for="mn'+i+'" style="--c:'+m.c+'" title="'+m.d+'"><svg viewBox="0 0 40 40" aria-hidden="true">'+FACE+m.g+'</svg>'+m.t+'</label>'});
+  $('mental').innerHTML=h;
+  function upd(){var v=document.querySelector('input[name=mental]:checked');$('mentalTxt').textContent=v?mentalOf(v.value).d:''}
+  $('mental').addEventListener('change',upd);upd()}
+var MV=[0,0.6,1.2,1.6,4.8],MK=['alert','confused','disoriented','drowsy','unresponsive'];
+var RED=/chest|breath|bleed|stroke|seiz|unconscious|overdose|faint|numb|slur|head injur|trauma|sepsis|cardiac|allergic/i,MILD=/follow.?up|routine|dressing|refill|rash|cold|sprain|check.?up|post.?op|monitor/i;
+function feats(pain,mk,age,reason){return [1,pain/10,MV[MK.indexOf(mk)]/4.8,age>=65?1:0,RED.test(reason)?1:0,MILD.test(reason)?1:0]}
+function softmax(z){var m=Math.max.apply(null,z),e=z.map(function(v){return Math.exp(v-m)}),t=e.reduce(function(a,b){return a+b});return e.map(function(v){return v/t})}
+function dotW(W,x){return W.map(function(w){return w.reduce(function(a,v,j){return a+v*x[j]},0)})}
+function trainModel(){
+ var seed=7;function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+ function gauss(){return Math.sqrt(-2*Math.log(rnd()+1e-9))*Math.cos(6.2832*rnd())}
+ var X=[],Y=[],N=900,n=720,i,c,j;
+ for(i=0;i<N;i++){var pain=Math.floor(rnd()*11),r=rnd(),mi=r<.6?0:r<.75?1:r<.85?2:r<.95?3:4,age=18+rnd()*72,red=rnd()<.18,mild=!red&&rnd()<.35;
+  var sc=.4*pain+MV[mi]+(red?1.6:0)+(age>=65?.6:0)-(mild?.8:0)+gauss()*.6;
+  X.push([1,pain/10,MV[mi]/4.8,age>=65?1:0,red?1:0,mild?1:0]);Y.push(sc<2.4?0:sc<4.4?1:2)}
+ var W=[0,1,2].map(function(){return[0,0,0,0,0,0]});
+ for(var ep=0;ep<800;ep++){var G=[0,1,2].map(function(){return[0,0,0,0,0,0]});
+  for(i=0;i<n;i++){var p=softmax(dotW(W,X[i]));for(c=0;c<3;c++){var d=p[c]-(Y[i]===c?1:0);for(j=0;j<6;j++)G[c][j]+=d*X[i][j]}}
+  for(c=0;c<3;c++)for(j=0;j<6;j++)W[c][j]-=3*G[c][j]/n}
+ var ok=0;for(i=n;i<N;i++){var q=dotW(W,X[i]);if(q.indexOf(Math.max.apply(null,q))===Y[i])ok++}
+ return{W:W,acc:Math.round(100*ok/(N-n)),n:N}}
+var MODEL=trainModel();
+function inputs(){var pv=document.querySelector('input[name=pain]:checked');if(!pv)return null;var dob=$('dob').value;return{pain:+pv.value,mk:document.querySelector('input[name=mental]:checked').value,age:Math.max(ageFrom(dob),$('sr').checked?65:0),reason:$('reason').value}}
+function suggest(){var q=inputs();if(!q)return null;var x=feats(q.pain,q.mk,q.age,q.reason),p=softmax(dotW(MODEL.W,x)),c=p.indexOf(Math.max.apply(null,p));
+ var names=['','Pain level '+q.pain+'/10','Mental status: '+mentalOf(q.mk).t.toLowerCase(),'Age '+q.age,'Red-flag words in reason','Routine-visit words in reason'],why=[];
+ for(var j=1;j<6;j++){var m=(MODEL.W[0][j]+MODEL.W[1][j]+MODEL.W[2][j])/3;why.push({n:names[j],v:(MODEL.W[c][j]-m)*x[j]})}
+ why=why.filter(function(w){return w.v>0.4}).sort(function(a,b){return b.v-a.v}).slice(0,3).map(function(w){return w.n});
+ return{lvl:c+1,p:p,why:why}}
+function aiRender(){$('ageNote').textContent=$('sr').checked?'Flagged as 65+ priority. The assigned nurse will be alerted and the patient moves up the list.':'';
+ var s=suggest(),el=$('ai');
+ if(!s){el.innerHTML='<b>AI triage suggestion</b><p class="hint">Select a pain level and the model will suggest an acuity.</p>';return}
+ var L=LEVELS[s.lvl];
+ el.innerHTML='<b>AI suggests: <span style="color:'+L.c+'">'+L.t+'</span> ('+Math.round(100*s.p[s.lvl-1])+'% confident)</b>'+
+ [1,2,3].map(function(l){var v=Math.round(100*s.p[l-1]);return '<div class="pb" style="--c:'+LEVELS[l].c+'"><span>'+LEVELS[l].t+'</span><i><u style="width:'+v+'%"></u></i><span>'+v+'%</span></div>'}).join('')+
+ '<p class="hint">Why: '+esc(s.why.length?s.why.join('; '):(s.lvl===1?'low pain, alert, no red-flag words':'combination of factors'))+'.</p><button type="button" class="btn ghost" data-useai="'+s.lvl+'">Use suggestion</button><p class="hint">Decision support only. The nurse makes the final call. Model: logistic regression trained in your browser on '+MODEL.n+' synthetic cases, '+MODEL.acc+'% accurate on held-out cases.</p>'}
+function ageFrom(d){return d?Math.floor((Date.now()-new Date(d))/31557600000):0}
+function painWord(n){return n===0?'No pain':n<=3?'Mild':n<=6?'Moderate':'Severe'}
+function painColor(n){return n<=3?'var(--r1)':n<=6?'var(--r2)':'var(--r3)'}
+function buildPain(){var h='';for(var i=0;i<=10;i++)h+='<input type="radio" name="pain" id="pn'+i+'" value="'+i+'"><label for="pn'+i+'" style="--c:'+painColor(i)+'" title="'+painWord(i)+'">'+i+'</label>';$('pain').innerHTML=h;
+  $('pain').addEventListener('change',function(){var v=document.querySelector('input[name=pain]:checked');$('painTxt').textContent=v?v.value+'/10, '+painWord(+v.value).toLowerCase():''})}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function save(){try{localStorage.setItem('ward3w',JSON.stringify(patients))}catch(e){}}
+function load(nid){return patients.filter(function(p){return p.nurse===nid}).length}
+function bedTaken(bid){return patients.some(function(p){return p.bed===bid})}
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('show')},2800)}
+function nurseName(id){return NURSES.filter(function(n){return n.id===id})[0].name}
+function time(ts){return new Date(ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+
+function render(){
+  var open=BEDS.filter(function(b){return !bedTaken(b.id)});
+  var cap=NURSES.filter(function(n){return load(n.id)<MAXLOAD});
+  $('sIn').textContent=patients.length;$('sBeds').textContent=open.length;$('sNurse').textContent=cap.length;var ap=patients.filter(function(p){return p.aiLvl});$('sAI').textContent=ap.length?Math.round(100*ap.filter(function(p){return p.aiLvl===p.lvl}).length/ap.length)+'%':'\u2013';
+
+  var al=patients.filter(function(p){return p.senior&&!p.ack});
+  $('alertsSec').hidden=!al.length;
+  $('alerts').innerHTML=al.map(function(p){return '<div class="al"><div><b>'+esc(p.name)+'</b>, '+(p.age>=65?'age '+p.age:'marked 65+')+', bed '+p.bed+'<br><span style="color:var(--muted);font-size:13.5px">Assigned to '+esc(nurseName(p.nurse))+'. Patients 65 and older are a higher priority, so check on them promptly.</span></div><button class="btn ghost" data-ack="'+p.id+'">Mark seen</button></div>'}).join('');
+  var nv=$('nurseSel').value,bv=$('bedSel').value||picked;
+  $('nurseSel').innerHTML='<option value="">Auto (least busy)</option>'+NURSES.map(function(n){var l=load(n.id);return '<option value="'+n.id+'"'+(l>=MAXLOAD?' disabled':'')+'>'+esc(n.name)+' ('+l+'/'+MAXLOAD+')</option>'}).join('');
+  $('nurseSel').value=nv;
+  $('bedSel').innerHTML='<option value="">Auto (first open)</option>'+open.map(function(b){return '<option value="'+b.id+'">Bay '+b.bay+', bed '+b.id+'</option>'}).join('');
+  $('bedSel').value=open.some(function(b){return b.id===bv})?bv:'';
+  picked=$('bedSel').value;
+
+  var h='';['A','B'].forEach(function(bay){
+    h+='<div class="bay">Bay '+bay+(bay==='A'?' (near nurses\' station)':'')+'</div><div class="beds">';
+    BEDS.filter(function(b){return b.bay===bay}).forEach(function(b){
+      var p=patients.filter(function(x){return x.bed===b.id})[0];
+      if(p)h+='<div class="bed busy"><strong>'+b.id+'</strong><small>'+esc(p.name)+'</small><small>'+esc(nurseName(p.nurse).split(',')[0])+'</small></div>';
+      else h+='<button type="button" class="bed'+(picked===b.id?' pick':'')+'" data-bed="'+b.id+'" aria-label="Open bed '+b.id+', select for next patient"><strong>'+b.id+'</strong><small>Open</small></button>';
+    });h+='</div>';
+  });
+  $('beds').innerHTML=h;
+
+  $('nurses').innerHTML=NURSES.map(function(n){var l=load(n.id),m='',sp=al.filter(function(p){return p.nurse===n.id}).length;for(var i=0;i<MAXLOAD;i++)m+='<i class="'+(i<l?'on':'')+'"></i>';
+    return '<div class="nurse"><b>'+esc(n.name)+'</b><small>'+(l>=MAXLOAD?'At capacity':l+' of '+MAXLOAD+' patients')+'</small>'+(sp?'<small style="display:block;color:var(--r2);font-weight:600">&#9679; '+sp+' priority alert'+(sp>1?'s':'')+' (65+)</small>':'')+'<div class="meter'+(l>=MAXLOAD?' full':'')+'">'+m+'</div></div>'}).join('');
+
+  $('pts').innerHTML=patients.length?patients.slice().sort(function(a,b){return b.lvl-a.lvl||(b.senior?1:0)-(a.senior?1:0)||a.at-b.at}).map(function(p){
+    return '<div class="pt"><span class="dot" style="--c:'+LEVELS[p.lvl].c+'" title="'+LEVELS[p.lvl].t+'"></span><div><b>'+esc(p.name)+'</b> <span style="color:var(--muted)">'+esc(p.mrn)+'</span>'+(p.senior?' <span class="badge">65+ priority</span>':'')+'</div><button class="btn ghost" data-out="'+p.id+'">Discharge</button><div class="meta">'+esc(p.reason||'No reason given')+(typeof p.pain==='number'?'<br><span style="color:'+painColor(p.pain)+'">&#9679;</span> Pain '+p.pain+'/10, '+painWord(p.pain).toLowerCase():'')+(mentalOf(p.mental)?'<br><span style="color:'+mentalOf(p.mental).c+'">&#9679;</span> '+mentalOf(p.mental).t+', '+mentalOf(p.mental).d:'')+'<br>Bed '+p.bed+' with '+esc(nurseName(p.nurse))+', checked in '+time(p.at)+(p.aiLvl?', AI suggested '+LEVELS[p.aiLvl].t:'')+(p.dob?', DOB '+esc(p.dob):'')+'</div></div>'}).join(''):'<p class="empty">No patients checked in. Use the form to admit the first one.</p>';
+}
+
+function checkIn(){
+  var name=$('name').value.trim(),err=$('err');err.textContent='';
+  if(!name){err.textContent='Enter the patient\'s full name.';$('name').focus();return}
+  var pv=document.querySelector('input[name=pain]:checked');
+  if(!pv){err.textContent='Select the patient\'s pain level, from 0 to 10.';return}
+  var sg=suggest(),age=ageFrom($('dob').value),sen=age>=65||$('sr').checked;
+  var lvl=+document.querySelector('input[name=tri]:checked').value;
+  var nid=$('nurseSel').value,bid=$('bedSel').value;
+  if(!nid){var c=NURSES.filter(function(n){return load(n.id)<MAXLOAD}).sort(function(a,b){return load(a.id)-load(b.id)});
+    if(!c.length){err.textContent='Every nurse is at capacity. Discharge a patient first.';return}nid=c[0].id}
+  if(!bid){var o=BEDS.filter(function(b){return !bedTaken(b.id)});
+    if(!o.length){err.textContent='No beds are open. Discharge a patient first.';return}
+    var pref=lvl===3?o.filter(function(b){return b.bay==='A'}):[];bid=(pref[0]||o[0]).id}
+  var mrn=$('mrn').value.trim()||('MRN-'+Math.floor(100000+Math.random()*900000));
+  patients.push({id:'p'+Date.now(),name:name,dob:$('dob').value,mrn:mrn,reason:$('reason').value.trim(),lvl:lvl,age:age,senior:sen,ack:false,aiLvl:sg.lvl,pain:+pv.value,mental:document.querySelector('input[name=mental]:checked').value,nurse:nid,bed:bid,at:Date.now()});
+  save();
+  ['name','dob','mrn','reason'].forEach(function(k){$(k).value=''});$('sr').checked=false;
+  $('nurseSel').value='';$('bedSel').value='';picked='';document.getElementById('t1').checked=true;pv.checked=false;$('mn0').checked=true;$('mn0').dispatchEvent(new Event('change',{bubbles:true}));aiRender();$('painTxt').textContent='';
+  render();toast(name+' checked in: bed '+bid+', '+nurseName(nid).split(',')[0]+(sen?'. Priority alert sent to the nurse.':''));$('name').focus();
+}
+
+$('go').onclick=checkIn;
+$('formWrap').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='radio')checkIn()});
+$('bedSel').onchange=function(){picked=this.value;render()};
+$('dob').addEventListener('input',function(){var a=ageFrom(this.value);if(a>=65)$('sr').checked=true;else if(a>0)$('sr').checked=false});
+$('formWrap').addEventListener('input',aiRender);$('formWrap').addEventListener('change',aiRender);
+document.addEventListener('click',function(e){
+  var u=e.target.closest('[data-useai]');if(u)$('t'+u.dataset.useai).checked=true;
+  var k=e.target.closest('[data-ack]');if(k){patients.forEach(function(p){if(p.id===k.dataset.ack)p.ack=true});save();render()}
+  var b=e.target.closest('[data-bed]'),d=e.target.closest('[data-out]');
+  if(b){picked=picked===b.dataset.bed?'':b.dataset.bed;$('bedSel').value=picked;render()}
+  if(d){var p=patients.filter(function(x){return x.id===d.dataset.out})[0];patients=patients.filter(function(x){return x.id!==d.dataset.out});save();render();toast(p.name+' discharged. Bed '+p.bed+' is open.')}
+});
+buildMental();buildPain();
+render();aiRender();
+})();
+</script>
+</body>
+</html>
