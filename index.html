@@ -107,6 +107,7 @@ section[hidden]+section{margin-top:0}
     <div class="stat"><b id="sBeds">0</b><span>Beds open</span></div>
     <div class="stat"><b id="sNurse">0</b><span>Nurses with capacity</span></div>
     <div class="stat"><b id="sAI">&ndash;</b><span>AI matched nurse</span></div>
+    <div class="stat"><b id="sNext">&ndash;</b><span>Next discharge (est.)</span></div>
   </div>
 </header>
 
@@ -125,6 +126,7 @@ section[hidden]+section{margin-top:0}
         <p class="hint" id="ageNote" aria-live="polite"></p>
         <label for="reason">Reason for visit</label>
         <input id="reason" autocomplete="off" placeholder="e.g. Post-op monitoring">
+        <button type="button" class="btn ghost" id="mic" hidden style="margin-top:8px">Dictate reason</button>
         <label id="painLbl">Pain level <span id="painTxt"></span></label>
         <div class="pain" id="pain" role="radiogroup" aria-labelledby="painLbl"></div>
         <div class="pscale"><span>No pain</span><span>Worst possible</span></div>
@@ -141,7 +143,7 @@ section[hidden]+section{margin-top:0}
         <select id="nurseSel"></select>
         <label for="bedSel">Bed</label>
         <select id="bedSel"></select>
-        <p class="hint">Leave both on Auto to assign the least-busy nurse and the first open bed. Critical patients go to Bay A, closest to the nurses' station.</p>
+        <p class="hint">Leave both on Auto to assign the least-busy nurse and the first open bed. A reinforcement learning agent picks the bay, favoring Bay A for critical patients.</p>
         <p class="err" id="err" role="alert"></p>
         <button class="btn" id="go">Check in and assign</button>
       </div>
@@ -161,6 +163,10 @@ section[hidden]+section{margin-top:0}
       <h2>Nurses on shift</h2>
       <div class="nurses" id="nurses"></div>
     </section>
+    <section id="grpSec" hidden>
+      <h2>Patient groups (AI clustering)</h2>
+      <div id="groups"></div>
+    </section>
     <section>
       <h2>Patients in hospital</h2>
       <div id="pts"></div>
@@ -177,7 +183,7 @@ var BEDS=[];['A','B'].forEach(function(b){for(var i=1;i<=6;i++)BEDS.push({id:b+i
 var LEVELS={1:{t:'Routine',c:'var(--r1)'},2:{t:'Urgent',c:'var(--r2)'},3:{t:'Critical',c:'var(--r3)'}};
 var patients=[];
 try{var s=localStorage.getItem('ward3w');if(s)patients=JSON.parse(s)||[]}catch(e){}
-var picked='';
+var picked='',rc='';
 
 var FACE='<circle cx="20" cy="20" r="17"/>';
 var MENTAL=[
@@ -210,6 +216,44 @@ function trainModel(){
  var ok=0;for(i=n;i<N;i++){var q=dotW(W,X[i]);if(q.indexOf(Math.max.apply(null,q))===Y[i])ok++}
  return{W:W,acc:Math.round(100*ok/(N-n)),n:N}}
 var MODEL=trainModel();
+function lcg(seed){var s=seed;return function(){s=(s*1664525+1013904223)%4294967296;return s/4294967296}}
+function losX(p,m,sr,l){return[1,p/10,m,sr,l-1]}
+function trainLOS(){var r=lcg(11),X=[],Y=[],W=[0,0,0,0,0],i,j,e,n=600;
+ for(i=0;i<n;i++){var pn=Math.floor(r()*11),m=MV[Math.floor(r()*r()*5)]/4.8,sr=r()<.3?1:0,l=1+Math.floor(r()*3);X.push(losX(pn,m,sr,l));Y.push(2+5*pn/10+7*m+3*sr+3*(l-1)+(r()-.5)*2)}
+ for(e=0;e<1500;e++){var G=[0,0,0,0,0];for(i=0;i<n;i++){var d=W.reduce(function(a,w,k){return a+w*X[i][k]},0)-Y[i];for(j=0;j<5;j++)G[j]+=d*X[i][j]}for(j=0;j<5;j++)W[j]-=.3*G[j]/n}
+ return W}
+function estNum(p){var x=losX(p.pain||0,MV[Math.max(0,MK.indexOf(p.mental))]/4.8,p.senior?1:0,p.lvl);return Math.max(1,LOSW.reduce(function(a,w,i){return a+w*x[i]},0))}
+function nextDis(){if(!patients.length)return '\u2013';var m=Math.min.apply(null,patients.map(function(p){return Math.max(.1,estNum(p)-(Date.now()-p.at)/36e5)}));return m<1?Math.round(m*60)+' min':m.toFixed(1)+' h'}
+function rlTrain(){var Q={},r=lcg(5),ep;
+ for(ep=0;ep<30000;ep++){var l=1+Math.floor(r()*3),fa=Math.floor(r()*7),fb=Math.floor(r()*7);if(!fa&&!fb)continue;
+  var k=l+','+fa+','+fb,q=Q[k]||(Q[k]=[0,0]),a=r()<.2?Math.floor(r()*2):(q[0]>=q[1]?0:1),rw;
+  if(a===0?!fa:!fb)rw=-5;else rw=(l===3?(a?-2:2):l===2?(a?0:.5):(a?.5:-.5))+(a?fb-fa:fa-fb)*.1;
+  q[a]+=.1*(rw-q[a])}
+ return Q}
+function rlBay(l,o){var fa=o.filter(function(b){return b.bay==='A'}).length,fb=o.length-fa,q=RLQ[l+','+fa+','+fb]||[0,0],a=q[0]>=q[1]?0:1;if(!a&&!fa)a=1;if(a&&!fb)a=0;return a?'B':'A'}
+var LOSW=trainLOS(),RLQ=rlTrain();
+function grpRender(){var P=patients;$('grpSec').hidden=P.length<3;if(P.length<3)return;
+ var X=P.map(function(p){return[(p.pain||0)/10,MV[Math.max(0,MK.indexOf(p.mental))]/4.8,p.senior?1:0]});
+ function d2(a,b){return a.reduce(function(s,v,i){return s+(v-b[i])*(v-b[i])},0)}
+ var C=[X[0]],it;while(C.length<3){var best=0,bd=-1;X.forEach(function(x,i){var m=Math.min.apply(null,C.map(function(c){return d2(x,c)}));if(m>bd){bd=m;best=i}});C.push(X[best])}
+ var L=[];for(it=0;it<10;it++){L=X.map(function(x){var ds=C.map(function(c){return d2(x,c)});return ds.indexOf(Math.min.apply(null,ds))});
+  C=C.map(function(c,ci){var m=X.filter(function(x,i){return L[i]===ci});return m.length?c.map(function(_,j){return m.reduce(function(s,x){return s+x[j]},0)/m.length}):c})}
+ var names=['High attention','Moderate attention','Lower attention'];
+ var ord=C.map(function(c,i){return{i:i,s:c[0]+c[1]*1.5+c[2]*.5}}).sort(function(a,b){return b.s-a.s});
+ $('groups').innerHTML='<p class="hint" style="margin-top:0">k-means (unsupervised) groups patients by pain, mental status and age 65+, with no labels.</p>'+ord.map(function(o,r){var m=P.filter(function(p,i){return L[i]===o.i});
+  return m.length?'<div class="al"><div><b>'+names[r]+'</b> ('+m.length+', avg pain '+(C[o.i][0]*10).toFixed(1)+'/10)<br><span style="color:var(--muted);font-size:13.5px">'+m.map(function(p){return esc(p.name)}).join(', ')+'</span></div></div>':''}).join('')}
+function recheckUI(p){var h='';if(p.worse)h+='<div class="meta" style="grid-column:1/-1;color:var(--r3);font-weight:600">&#9679; Worsening: '+esc(p.worse)+'</div>';
+ if(rc===p.id){var po='',mo='',i;for(i=0;i<=10;i++)po+='<option'+(i===(p.pain||0)?' selected':'')+'>'+i+'</option>';
+  MENTAL.forEach(function(m){mo+='<option value="'+m.k+'"'+(m.k===p.mental?' selected':'')+'>'+m.t+'</option>'});
+  h+='<div class="meta" style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center">Pain <select id="rcP" style="width:auto">'+po+'</select> Mental <select id="rcM" style="width:auto">'+mo+'</select> <button class="btn ghost" data-save="'+p.id+'">Save re-check</button></div>'}
+ return h}
+function saveRecheck(id){var p=patients.filter(function(x){return x.id===id})[0];if(!p)return;
+ var np=+$('rcP').value,nm=$('rcM').value,op=p.pain||0,om=p.mental||'alert',w=[];
+ if(np-op>=2)w.push('pain '+op+' to '+np);
+ if(MK.indexOf(nm)>MK.indexOf(om))w.push('mental state '+om+' to '+nm);
+ p.pain=np;p.mental=nm;p.why=whyText(np,nm,p.age||0,p.senior,p.reason||'',p.lvl);
+ if(w.length){p.worse=w.join(', ');p.ack=false}else if(np<op||MK.indexOf(nm)<MK.indexOf(om))p.worse='';
+ rc='';save();render();toast(w.length?p.name+': condition worsening, nurse alerted':'Re-check saved for '+p.name)}
 function inputs(){var pv=document.querySelector('input[name=pain]:checked');if(!pv)return null;var dob=$('dob').value;return{pain:+pv.value,mk:document.querySelector('input[name=mental]:checked').value,age:Math.max(ageFrom(dob),$('sr').checked?65:0),reason:$('reason').value}}
 function suggest(){var q=inputs();if(!q)return null;var x=feats(q.pain,q.mk,q.age,q.reason),p=softmax(dotW(MODEL.W,x)),c=p.indexOf(Math.max.apply(null,p));
  var names=['','Pain level '+q.pain+'/10','Mental status: '+mentalOf(q.mk).t.toLowerCase(),'Age '+q.age,'Red-flag words in reason','Routine-visit words in reason'],why=[];
@@ -219,11 +263,18 @@ function suggest(){var q=inputs();if(!q)return null;var x=feats(q.pain,q.mk,q.ag
 function aiRender(){$('ageNote').textContent=$('sr').checked?'Flagged as 65+ priority. The assigned nurse will be alerted and the patient moves up the list.':'';
  var s=suggest(),el=$('ai');
  if(!s){el.innerHTML='<b>AI triage suggestion</b><p class="hint">Select a pain level and the model will suggest an acuity.</p>';return}
- var L=LEVELS[s.lvl];
+ var L=LEVELS[s.lvl],q=inputs();
  el.innerHTML='<b>AI suggests: <span style="color:'+L.c+'">'+L.t+'</span> ('+Math.round(100*s.p[s.lvl-1])+'% confident)</b>'+
  [1,2,3].map(function(l){var v=Math.round(100*s.p[l-1]);return '<div class="pb" style="--c:'+LEVELS[l].c+'"><span>'+LEVELS[l].t+'</span><i><u style="width:'+v+'%"></u></i><span>'+v+'%</span></div>'}).join('')+
- '<p class="hint">Why: '+esc(s.why.length?s.why.join('; '):(s.lvl===1?'low pain, alert, no red-flag words':'combination of factors'))+'.</p><button type="button" class="btn ghost" data-useai="'+s.lvl+'">Use suggestion</button><p class="hint">Decision support only. The nurse makes the final call. Model: logistic regression trained in your browser on '+MODEL.n+' synthetic cases, '+MODEL.acc+'% accurate on held-out cases.</p>'}
+ '<p class="hint">'+esc(whyText(q.pain,q.mk,ageFrom($('dob').value),q.age>=65,q.reason,s.lvl))+'</p><button type="button" class="btn ghost" data-useai="'+s.lvl+'">Use suggestion</button><p class="hint">Decision support only. The nurse makes the final call. Model: logistic regression trained in your browser on '+MODEL.n+' synthetic cases, '+MODEL.acc+'% accurate on held-out cases.</p>'}
 function ageFrom(d){return d?Math.floor((Date.now()-new Date(d))/31557600000):0}
+function whyText(pain,mk,age,sen,reason,lvl){
+ var up=[],down=[],w=painWord(pain).toLowerCase();
+ if(pain>=4)up.push(w+' pain ('+pain+'/10)');else down.push((pain===0?'no pain':w+' pain')+' ('+pain+'/10)');
+ if(mk==='alert')down.push('alert');else up.push(mentalOf(mk).t.toLowerCase());
+ if(sen)up.push(age>=65?'age '+age+' (65+)':'marked 65+');else down.push(age>0?'age '+age+' (under 65)':'not marked 65+');
+ if(RED.test(reason||''))up.push('red-flag words in reason');
+ return 'Priority: '+LEVELS[lvl].t.toLowerCase()+(sen?', moved up for age 65+':'')+'. Raising priority: '+(up.join(', ')||'nothing')+'. Not raising: '+(down.join(', ')||'nothing')+'.'}
 function painWord(n){return n===0?'No pain':n<=3?'Mild':n<=6?'Moderate':'Severe'}
 function painColor(n){return n<=3?'var(--r1)':n<=6?'var(--r2)':'var(--r3)'}
 function buildPain(){var h='';for(var i=0;i<=10;i++)h+='<input type="radio" name="pain" id="pn'+i+'" value="'+i+'"><label for="pn'+i+'" style="--c:'+painColor(i)+'" title="'+painWord(i)+'">'+i+'</label>';$('pain').innerHTML=h;
@@ -240,11 +291,12 @@ function time(ts){return new Date(ts).toLocaleTimeString([],{hour:'numeric',minu
 function render(){
   var open=BEDS.filter(function(b){return !bedTaken(b.id)});
   var cap=NURSES.filter(function(n){return load(n.id)<MAXLOAD});
-  $('sIn').textContent=patients.length;$('sBeds').textContent=open.length;$('sNurse').textContent=cap.length;var ap=patients.filter(function(p){return p.aiLvl});$('sAI').textContent=ap.length?Math.round(100*ap.filter(function(p){return p.aiLvl===p.lvl}).length/ap.length)+'%':'\u2013';
+  $('sIn').textContent=patients.length;$('sBeds').textContent=open.length;$('sNext').textContent=nextDis();$('sNurse').textContent=cap.length;var ap=patients.filter(function(p){return p.aiLvl});$('sAI').textContent=ap.length?Math.round(100*ap.filter(function(p){return p.aiLvl===p.lvl}).length/ap.length)+'%':'\u2013';
 
-  var al=patients.filter(function(p){return p.senior&&!p.ack});
+  var al=patients.filter(function(p){return (p.senior||p.worse)&&!p.ack});
   $('alertsSec').hidden=!al.length;
-  $('alerts').innerHTML=al.map(function(p){return '<div class="al"><div><b>'+esc(p.name)+'</b>, '+(p.age>=65?'age '+p.age:'marked 65+')+', bed '+p.bed+'<br><span style="color:var(--muted);font-size:13.5px">Assigned to '+esc(nurseName(p.nurse))+'. Patients 65 and older are a higher priority, so check on them promptly.</span></div><button class="btn ghost" data-ack="'+p.id+'">Mark seen</button></div>'}).join('');
+  $('alerts').innerHTML=al.map(function(p){return '<div class="al"><div><b>'+esc(p.name)+'</b>, '+(p.age>=65?'age '+p.age:'marked 65+')+', bed '+p.bed+'<br><span style="color:var(--muted);font-size:13.5px">Assigned to '+esc(nurseName(p.nurse))+(p.worse?'. Condition worsening: '+esc(p.worse)+'. Check on them now.':'. Patients 65 and older are a higher priority, so check on them promptly.')+'</span></div><button class="btn ghost" data-ack="'+p.id+'">Mark seen</button></div>'}).join('');
+  grpRender();
   var nv=$('nurseSel').value,bv=$('bedSel').value||picked;
   $('nurseSel').innerHTML='<option value="">Auto (least busy)</option>'+NURSES.map(function(n){var l=load(n.id);return '<option value="'+n.id+'"'+(l>=MAXLOAD?' disabled':'')+'>'+esc(n.name)+' ('+l+'/'+MAXLOAD+')</option>'}).join('');
   $('nurseSel').value=nv;
@@ -263,10 +315,10 @@ function render(){
   $('beds').innerHTML=h;
 
   $('nurses').innerHTML=NURSES.map(function(n){var l=load(n.id),m='',sp=al.filter(function(p){return p.nurse===n.id}).length;for(var i=0;i<MAXLOAD;i++)m+='<i class="'+(i<l?'on':'')+'"></i>';
-    return '<div class="nurse"><b>'+esc(n.name)+'</b><small>'+(l>=MAXLOAD?'At capacity':l+' of '+MAXLOAD+' patients')+'</small>'+(sp?'<small style="display:block;color:var(--r2);font-weight:600">&#9679; '+sp+' priority alert'+(sp>1?'s':'')+' (65+)</small>':'')+'<div class="meter'+(l>=MAXLOAD?' full':'')+'">'+m+'</div></div>'}).join('');
+    return '<div class="nurse"><b>'+esc(n.name)+'</b><small>'+(l>=MAXLOAD?'At capacity':l+' of '+MAXLOAD+' patients')+'</small>'+(sp?'<small style="display:block;color:var(--r2);font-weight:600">&#9679; '+sp+' priority alert'+(sp>1?'s':'')+'</small>':'')+'<div class="meter'+(l>=MAXLOAD?' full':'')+'">'+m+'</div></div>'}).join('');
 
   $('pts').innerHTML=patients.length?patients.slice().sort(function(a,b){return b.lvl-a.lvl||(b.senior?1:0)-(a.senior?1:0)||a.at-b.at}).map(function(p){
-    return '<div class="pt"><span class="dot" style="--c:'+LEVELS[p.lvl].c+'" title="'+LEVELS[p.lvl].t+'"></span><div><b>'+esc(p.name)+'</b> <span style="color:var(--muted)">'+esc(p.mrn)+'</span>'+(p.senior?' <span class="badge">65+ priority</span>':'')+'</div><button class="btn ghost" data-out="'+p.id+'">Discharge</button><div class="meta">'+esc(p.reason||'No reason given')+(typeof p.pain==='number'?'<br><span style="color:'+painColor(p.pain)+'">&#9679;</span> Pain '+p.pain+'/10, '+painWord(p.pain).toLowerCase():'')+(mentalOf(p.mental)?'<br><span style="color:'+mentalOf(p.mental).c+'">&#9679;</span> '+mentalOf(p.mental).t+', '+mentalOf(p.mental).d:'')+'<br>Bed '+p.bed+' with '+esc(nurseName(p.nurse))+', checked in '+time(p.at)+(p.aiLvl?', AI suggested '+LEVELS[p.aiLvl].t:'')+(p.dob?', DOB '+esc(p.dob):'')+'</div></div>'}).join(''):'<p class="empty">No patients checked in. Use the form to admit the first one.</p>';
+    return '<div class="pt"><span class="dot" style="--c:'+LEVELS[p.lvl].c+'" title="'+LEVELS[p.lvl].t+'"></span><div><b>'+esc(p.name)+'</b> <span style="color:var(--muted)">'+esc(p.mrn)+'</span>'+(p.senior?' <span class="badge">65+ priority</span>':'')+'</div><span><button class="btn ghost" data-re="'+p.id+'">Re-check</button> <button class="btn ghost" data-out="'+p.id+'">Discharge</button></span><div class="meta">'+esc(p.reason||'No reason given')+(typeof p.pain==='number'?'<br><span style="color:'+painColor(p.pain)+'">&#9679;</span> Pain '+p.pain+'/10, '+painWord(p.pain).toLowerCase():'')+(mentalOf(p.mental)?'<br><span style="color:'+mentalOf(p.mental).c+'">&#9679;</span> '+mentalOf(p.mental).t+', '+mentalOf(p.mental).d:'')+(p.why?'<br><b>Why:</b> '+esc(p.why):'')+'<br>Bed '+p.bed+' with '+esc(nurseName(p.nurse))+', checked in '+time(p.at)+(p.aiLvl?', AI suggested '+LEVELS[p.aiLvl].t:'')+', est. stay '+estNum(p).toFixed(1)+' h'+(p.dob?', DOB '+esc(p.dob):'')+'</div>'+recheckUI(p)+'</div>'}).join(''):'<p class="empty">No patients checked in. Use the form to admit the first one.</p>';
 }
 
 function checkIn(){
@@ -281,9 +333,9 @@ function checkIn(){
     if(!c.length){err.textContent='Every nurse is at capacity. Discharge a patient first.';return}nid=c[0].id}
   if(!bid){var o=BEDS.filter(function(b){return !bedTaken(b.id)});
     if(!o.length){err.textContent='No beds are open. Discharge a patient first.';return}
-    var pref=lvl===3?o.filter(function(b){return b.bay==='A'}):[];bid=(pref[0]||o[0]).id}
+    var bay=rlBay(lvl,o),pref=o.filter(function(b){return b.bay===bay});bid=(pref[0]||o[0]).id}
   var mrn=$('mrn').value.trim()||('MRN-'+Math.floor(100000+Math.random()*900000));
-  patients.push({id:'p'+Date.now(),name:name,dob:$('dob').value,mrn:mrn,reason:$('reason').value.trim(),lvl:lvl,age:age,senior:sen,ack:false,aiLvl:sg.lvl,pain:+pv.value,mental:document.querySelector('input[name=mental]:checked').value,nurse:nid,bed:bid,at:Date.now()});
+  patients.push({id:'p'+Date.now(),name:name,dob:$('dob').value,mrn:mrn,reason:$('reason').value.trim(),lvl:lvl,age:age,senior:sen,why:whyText(+pv.value,document.querySelector('input[name=mental]:checked').value,age,sen,$('reason').value,lvl),ack:false,aiLvl:sg.lvl,pain:+pv.value,mental:document.querySelector('input[name=mental]:checked').value,nurse:nid,bed:bid,at:Date.now()});
   save();
   ['name','dob','mrn','reason'].forEach(function(k){$(k).value=''});$('sr').checked=false;
   $('nurseSel').value='';$('bedSel').value='';picked='';document.getElementById('t1').checked=true;pv.checked=false;$('mn0').checked=true;$('mn0').dispatchEvent(new Event('change',{bubbles:true}));aiRender();$('painTxt').textContent='';
@@ -298,11 +350,15 @@ $('formWrap').addEventListener('input',aiRender);$('formWrap').addEventListener(
 document.addEventListener('click',function(e){
   var u=e.target.closest('[data-useai]');if(u)$('t'+u.dataset.useai).checked=true;
   var k=e.target.closest('[data-ack]');if(k){patients.forEach(function(p){if(p.id===k.dataset.ack)p.ack=true});save();render()}
+  var rb=e.target.closest('[data-re]');if(rb){rc=rc===rb.dataset.re?'':rb.dataset.re;render()}
+  var sv=e.target.closest('[data-save]');if(sv)saveRecheck(sv.dataset.save);
   var b=e.target.closest('[data-bed]'),d=e.target.closest('[data-out]');
   if(b){picked=picked===b.dataset.bed?'':b.dataset.bed;$('bedSel').value=picked;render()}
   if(d){var p=patients.filter(function(x){return x.id===d.dataset.out})[0];patients=patients.filter(function(x){return x.id!==d.dataset.out});save();render();toast(p.name+' discharged. Bed '+p.bed+' is open.')}
 });
 buildMental();buildPain();
+try{(function(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=$('mic');if(!SR)return;b.hidden=false;var rec=null;
+ b.onclick=function(){if(rec){rec.stop();return}rec=new SR();rec.lang='en-US';rec.onresult=function(e){$('reason').value=e.results[0][0].transcript;aiRender()};rec.onend=rec.onerror=function(){rec=null;b.textContent='Dictate reason'};b.textContent='Listening... tap to stop';rec.start()}})()}catch(e){}
 render();aiRender();
 })();
 </script>
