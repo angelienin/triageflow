@@ -8,22 +8,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
---bg:#F3F7F6;--panel:#FFFFFF;--ink:#14343B;--muted:#5E7A7F;--line:#D9E4E2;--brand:#1F6F78;--brand-ink:#FFFFFF;--tint:#E3F0EE;--free:#E3F0EE;--busy:#14343B;--busy-ink:#EAF4F2;--r1:#2F9E73;--r2:#E0A526;--r3:#D6493F;--field:#F8FBFA}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1E22;--panel:#152A2F;--ink:#E4F0EE;--muted:#8FAAAD;--line:#244148;--brand:#5CB8C0;--brand-ink:#0E1E22;--tint:#1C373D;--free:#1C373D;--busy:#E4F0EE;--busy-ink:#14343B;--field:#112328}}
-:root[data-theme="dark"]{--bg:#0E1E22;--panel:#152A2F;--ink:#E4F0EE;--muted:#8FAAAD;--line:#244148;--brand:#5CB8C0;--brand-ink:#0E1E22;--tint:#1C373D;--free:#1C373D;--busy:#E4F0EE;--busy-ink:#14343B;--field:#112328}
+--bg:#F2F7F7;--panel:#FFFFFF;--ink:#0D3039;--muted:#56777D;--line:#CFE0E2;--brand:#279FAA;--brand-ink:#FFFFFF;--tint:#E4F3F4;--free:#ECF7F7;--busy:#123B43;--busy-ink:#F2FBFB;--r1:#238A6C;--r2:#D5982A;--r3:#C94740;--field:#F7FBFB}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Instrument Sans",system-ui,sans-serif}
 h1,h2,h3{font-family:Newsreader,Georgia,serif;font-weight:600;margin:0;letter-spacing:-.01em}
-header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding:28px clamp(16px,4vw,48px) 20px;border-bottom:1px solid var(--line)}
+header{display:flex;flex-wrap:wrap;gap:18px 36px;align-items:center;justify-content:space-between;padding:18px clamp(16px,4vw,48px);border-bottom:1px solid var(--line);background:#fff;box-shadow:0 4px 18px rgba(13,48,57,.05)}
 h1{font-size:clamp(26px,4vw,36px)}
-.sub{color:var(--muted);margin:2px 0 0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.brand-lockup{display:flex;flex-direction:column;align-items:flex-start}
+.brand-logo{width:clamp(225px,23vw,300px);height:72px;overflow:hidden;background:#fff}
+.brand-logo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.sub{color:var(--muted);margin:-3px 0 0 18px;font-size:13px;font-weight:500;letter-spacing:.01em}
 .stats{display:flex;gap:28px;flex-wrap:wrap}
 .stat b{display:block;font:600 28px Newsreader,Georgia,serif;line-height:1}
 .stat span{color:var(--muted);font-size:13px}
-main{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:24px;padding:24px clamp(16px,4vw,48px) 48px;max-width:1280px;margin:0 auto}
-@media(max-width:860px){main{grid-template-columns:1fr}}
-section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+main{display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:24px;padding:24px clamp(16px,3vw,40px) 48px;max-width:1480px;margin:0 auto}
+@media(max-width:860px){main{grid-template-columns:minmax(0,1fr)}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;min-width:0}
+section{box-shadow:0 8px 26px rgba(13,48,57,.045)}
 section+section{margin-top:24px}
 h2{font-size:22px;margin-bottom:14px}
 .col{min-width:0}
@@ -31,6 +34,7 @@ label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin:14p
 input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row>*{min-width:0}
 .triage{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .triage input{position:absolute;opacity:0;width:0}
 .triage label{margin:0;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink);background:var(--field);display:flex;align-items:center;justify-content:center;gap:6px}
@@ -44,6 +48,14 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .mental input:checked+label{background:var(--tint);border-color:var(--c);box-shadow:0 0 0 1px var(--c);font-weight:600}
 .mental input:focus-visible+label{outline:2px solid var(--brand);outline-offset:1px}
 .ai{margin-top:14px;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:12px 14px;background:var(--tint)}
+.form-block{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.form-block:first-child{margin-top:0;padding-top:0;border-top:0}
+.form-block h3{font:600 17px "Instrument Sans",sans-serif;margin-bottom:4px}
+.step-kicker{display:block;color:var(--brand);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-bottom:2px}
+.decision{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--field)}
+.decision-note{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;color:var(--muted);font-size:13px}
+.decision-note strong{color:var(--ink)}
+#overrideWrap{margin-top:10px}
 .pb{display:grid;grid-template-columns:62px 1fr 36px;gap:8px;align-items:center;font-size:12.5px;margin-top:6px}
 .pb i{height:6px;border-radius:3px;background:var(--line);display:block;overflow:hidden}
 .pb u{display:block;height:100%;background:var(--c)}
@@ -57,7 +69,7 @@ section[hidden]+section{margin-top:0}
 .chk{display:flex;align-items:center;gap:10px;margin:14px 0 0;color:var(--ink);font-size:14px;font-weight:500;cursor:pointer}
 .chk input{width:18px;height:18px;padding:0;accent-color:var(--brand);flex:none}
 #ageNote{color:var(--r2);font-weight:500}
-.pain{display:grid;grid-template-columns:repeat(11,1fr);gap:4px}
+.pain{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px}
 .pain input{position:absolute;opacity:0;width:0}
 .pain label{margin:0;text-align:center;padding:9px 0 6px;border:1px solid var(--line);border-bottom:4px solid var(--c);border-radius:6px;cursor:pointer;color:var(--ink);background:var(--field);font-weight:500}
 .pain input:checked+label{background:var(--tint);border-color:var(--c);font-weight:700;box-shadow:0 0 0 1px var(--c)}
@@ -85,21 +97,55 @@ section[hidden]+section{margin-top:0}
 .meter i{flex:1;height:6px;border-radius:3px;background:var(--line)}
 .meter i.on{background:var(--brand)}
 .meter.full i.on{background:var(--r2)}
-.pt{display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.queue-section{padding:0;overflow:hidden;border-color:color-mix(in srgb,var(--brand) 28%,var(--line))}
+.queue-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;padding:20px 22px 16px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#DDF1F2,var(--panel) 68%)}
+.queue-head h2{margin:0}
+.queue-legend{color:var(--muted);font-size:12.5px;text-align:right}
+.queue-columns{display:grid;grid-template-columns:minmax(190px,1.5fr) 90px 120px 118px minmax(230px,auto);gap:12px;padding:9px 22px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.pt{display:grid;grid-template-columns:minmax(190px,1.5fr) 90px 120px 118px minmax(230px,auto);gap:8px 12px;align-items:center;padding:16px 22px;border-top:1px solid var(--line)}
 .pt:first-of-type{border-top:0}
-.dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
-.pt b{font-weight:600}
-.pt .meta{color:var(--muted);font-size:13.5px;grid-column:2}
+.pt:hover{background:color-mix(in srgb,var(--tint) 45%,transparent)}
+.patient-name{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.patient-name b{display:block;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patient-name small{display:block;color:var(--muted);font-size:12.5px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--c);flex:0 0 auto;margin-top:6px;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
+.status-badge,.priority-badge{display:inline-flex;align-items:center;width:max-content;max-width:100%;font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:99px;white-space:nowrap}
+.status-badge{background:var(--tint);color:var(--brand)}
+.priority-badge{color:#fff;background:var(--c)}
+.wait strong,.recheck-due strong{display:block;font-size:14px}
+.wait small,.recheck-due small{display:block;color:var(--muted);font-size:11.5px}
+.recheck-due.overdue strong{color:var(--r3)}
+.recheck-due.soon strong{color:var(--r2)}
+.quick{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.quick .ghost{padding:6px 9px}
+.quick .danger{color:var(--r3);border-color:color-mix(in srgb,var(--r3) 38%,var(--line));background:color-mix(in srgb,var(--r3) 5%,transparent)}
+.quick .danger:hover{background:color-mix(in srgb,var(--r3) 11%,transparent)}
+.chart-panel,.assign-panel,.recheck-panel{grid-column:1/-1;margin-top:8px;padding:14px;border-radius:10px;background:var(--field);border:1px solid var(--line)}
+.chart-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 18px}
+.chart-grid div{min-width:0}
+.chart-grid span{display:block;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.chart-grid p{margin:3px 0 0;font-size:13.5px}
+.assign-panel{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.assign-panel label{margin:0}
+.assign-panel .btn{margin:0;white-space:nowrap}
+.recheck-panel{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.recheck-panel label{margin:0;min-width:130px}
+.recheck-panel .btn{margin:0}
+.queue-empty{padding:26px 22px}
 .empty{color:var(--muted);padding:8px 0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(prefers-reduced-motion:reduce){.toast{transition:none}}
+@media(max-width:1120px){.queue-columns{display:none}.pt{grid-template-columns:1fr 1fr}.patient-name,.quick,.chart-panel,.assign-panel,.recheck-panel{grid-column:1/-1}.quick{justify-content:flex-start}.chart-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.pt{grid-template-columns:1fr}.wait,.status-cell,.recheck-due{display:flex;gap:8px;align-items:baseline}.chart-grid,.assign-panel{grid-template-columns:1fr}.queue-head{align-items:flex-start;flex-direction:column}.queue-legend{text-align:left}}
+@media(max-width:700px){header{align-items:flex-start}.stats{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}.brand-logo{width:230px;height:58px}.sub{margin-left:13px}.pain{gap:3px}.pain label{font-size:12px;padding:8px 0 5px}.mental{grid-template-columns:repeat(auto-fit,minmax(68px,1fr))}}
 </style>
 </head>
 <body>
 <header>
-  <div>
-    <h1>Hospital check-in</h1>
+  <div class="brand-lockup">
+    <h1 class="sr-only">TriageFlow hospital check-in</h1>
+    <div class="brand-logo"><img src="assets/triageflow-logo.png" alt="TriageFlow"></div>
     <p class="sub">Medical-surgical unit, 3 West</p>
   </div>
   <div class="stats" aria-live="polite">
@@ -116,6 +162,10 @@ section[hidden]+section{margin-top:0}
     <section>
       <h2>Check in a patient</h2>
       <div id="formWrap">
+        <div class="form-block">
+        <span class="step-kicker">Step 1</span>
+        <h3>Assessment information</h3>
+        <p class="hint">Record what you observe. The model updates after pain is selected.</p>
         <label for="name">Full name</label>
         <input id="name" autocomplete="off" placeholder="e.g. Maria Alvarez">
         <div class="row">
@@ -132,13 +182,31 @@ section[hidden]+section{margin-top:0}
         <div class="pscale"><span>No pain</span><span>Worst possible</span></div>
         <label id="mentalLbl">Mental status <span id="mentalTxt"></span></label>
         <div class="mental" id="mental" role="radiogroup" aria-labelledby="mentalLbl"></div>
-        <label id="triLbl">Acuity</label>
-        <div class="triage" role="radiogroup" aria-labelledby="triLbl">
-          <input type="radio" name="tri" id="t1" value="1" checked><label for="t1" style="--c:var(--r1)">Routine</label>
-          <input type="radio" name="tri" id="t2" value="2"><label for="t2" style="--c:var(--r2)">Urgent</label>
-          <input type="radio" name="tri" id="t3" value="3"><label for="t3" style="--c:var(--r3)">Critical</label>
         </div>
+
+        <div class="form-block">
+          <span class="step-kicker">Step 2 · Decision support</span>
+          <h3>AI suggestion</h3>
+          <p class="hint">Review the recommendation and rationale before making your decision.</p>
         <div class="ai" id="ai" aria-live="polite"></div>
+        </div>
+
+        <div class="form-block">
+          <span class="step-kicker">Step 3 · Nurse decision</span>
+          <h3>Final acuity and assignment</h3>
+          <div class="decision">
+            <p class="decision-note"><strong>You make the final decision.</strong> Select acuity below or use the AI suggestion as a starting point.</p>
+            <label id="triLbl">Final nurse-selected acuity</label>
+            <div class="triage" role="radiogroup" aria-labelledby="triLbl">
+              <input type="radio" name="tri" id="t1" value="1" checked><label for="t1" style="--c:var(--r1)">Routine</label>
+              <input type="radio" name="tri" id="t2" value="2"><label for="t2" style="--c:var(--r2)">Urgent</label>
+              <input type="radio" name="tri" id="t3" value="3"><label for="t3" style="--c:var(--r3)">Critical</label>
+            </div>
+            <div id="overrideWrap" hidden>
+              <label for="overrideReason">Override reason (optional)</label>
+              <input id="overrideReason" autocomplete="off" placeholder="Why is your decision different from the AI suggestion?">
+            </div>
+          </div>
         <label for="nurseSel">Nurse</label>
         <select id="nurseSel"></select>
         <label for="bedSel">Bed</label>
@@ -146,6 +214,7 @@ section[hidden]+section{margin-top:0}
         <p class="hint">Leave both on Auto to assign the least-busy nurse and the first open bed. A reinforcement learning agent picks the bay, favoring Bay A for critical patients.</p>
         <p class="err" id="err" role="alert"></p>
         <button class="btn" id="go">Check in and assign</button>
+        </div>
       </div>
     </section>
   </div>
@@ -154,6 +223,14 @@ section[hidden]+section{margin-top:0}
     <section id="alertsSec" hidden>
       <h2>Nurse alerts</h2>
       <div id="alerts" aria-live="polite"></div>
+    </section>
+    <section class="queue-section">
+      <div class="queue-head">
+        <div><span class="step-kicker">Live care queue</span><h2>Patients in hospital</h2></div>
+        <div class="queue-legend">Sorted by clinical attention needed<br><span style="color:var(--r3)">&#9679;</span> Critical &nbsp; <span style="color:var(--r2)">&#9679;</span> Urgent &nbsp; <span style="color:var(--r1)">&#9679;</span> Routine</div>
+      </div>
+      <div class="queue-columns" aria-hidden="true"><span>Patient / arrival</span><span>Wait</span><span>Status</span><span>Reassessment</span><span style="text-align:right">Quick actions</span></div>
+      <div id="pts" aria-live="polite"></div>
     </section>
     <section>
       <h2>Beds</h2>
@@ -167,10 +244,6 @@ section[hidden]+section{margin-top:0}
       <h2>Patient groups (AI clustering)</h2>
       <div id="groups"></div>
     </section>
-    <section>
-      <h2>Patients in hospital</h2>
-      <div id="pts"></div>
-    </section>
   </div>
 </main>
 <div class="toast" id="toast" role="status"></div>
@@ -183,7 +256,7 @@ var BEDS=[];['A','B'].forEach(function(b){for(var i=1;i<=6;i++)BEDS.push({id:b+i
 var LEVELS={1:{t:'Routine',c:'var(--r1)'},2:{t:'Urgent',c:'var(--r2)'},3:{t:'Critical',c:'var(--r3)'}};
 var patients=[];
 try{var s=localStorage.getItem('ward3w');if(s)patients=JSON.parse(s)||[]}catch(e){}
-var picked='',rc='';
+var picked='',rc='',chart='',assigning='';
 
 var FACE='<circle cx="20" cy="20" r="17"/>';
 var MENTAL=[
@@ -242,16 +315,16 @@ function grpRender(){var P=patients;$('grpSec').hidden=P.length<3;if(P.length<3)
  var ord=C.map(function(c,i){return{i:i,s:c[0]+c[1]*1.5+c[2]*.5}}).sort(function(a,b){return b.s-a.s});
  $('groups').innerHTML='<p class="hint" style="margin-top:0">k-means (unsupervised) groups patients by pain, mental status and age 65+, with no labels.</p>'+ord.map(function(o,r){var m=P.filter(function(p,i){return L[i]===o.i});
   return m.length?'<div class="al"><div><b>'+names[r]+'</b> ('+m.length+', avg pain '+(C[o.i][0]*10).toFixed(1)+'/10)<br><span style="color:var(--muted);font-size:13.5px">'+m.map(function(p){return esc(p.name)}).join(', ')+'</span></div></div>':''}).join('')}
-function recheckUI(p){var h='';if(p.worse)h+='<div class="meta" style="grid-column:1/-1;color:var(--r3);font-weight:600">&#9679; Worsening: '+esc(p.worse)+'</div>';
+function recheckUI(p){var h='';if(p.worse)h+='<div style="grid-column:1/-1;color:var(--r3);font-weight:600">&#9679; Worsening: '+esc(p.worse)+'</div>';
  if(rc===p.id){var po='',mo='',i;for(i=0;i<=10;i++)po+='<option'+(i===(p.pain||0)?' selected':'')+'>'+i+'</option>';
   MENTAL.forEach(function(m){mo+='<option value="'+m.k+'"'+(m.k===p.mental?' selected':'')+'>'+m.t+'</option>'});
-  h+='<div class="meta" style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center">Pain <select id="rcP" style="width:auto">'+po+'</select> Mental <select id="rcM" style="width:auto">'+mo+'</select> <button class="btn ghost" data-save="'+p.id+'">Save re-check</button></div>'}
+  h+='<div class="recheck-panel"><label>Pain<select id="rcP">'+po+'</select></label><label>Mental status<select id="rcM">'+mo+'</select></label><button class="btn ghost" data-save="'+p.id+'">Save reassessment</button></div>'}
  return h}
 function saveRecheck(id){var p=patients.filter(function(x){return x.id===id})[0];if(!p)return;
  var np=+$('rcP').value,nm=$('rcM').value,op=p.pain||0,om=p.mental||'alert',w=[];
  if(np-op>=2)w.push('pain '+op+' to '+np);
  if(MK.indexOf(nm)>MK.indexOf(om))w.push('mental state '+om+' to '+nm);
- p.pain=np;p.mental=nm;p.why=whyText(np,nm,p.age||0,p.senior,p.reason||'',p.lvl);
+ p.pain=np;p.mental=nm;p.why=whyText(np,nm,p.age||0,p.senior,p.reason||'',p.lvl);p.lastReassessed=Date.now();p.reassessAt=p.lastReassessed+reassessMs(p.lvl);p.status='Assigned';
  if(w.length){p.worse=w.join(', ');p.ack=false}else if(np<op||MK.indexOf(nm)<MK.indexOf(om))p.worse='';
  rc='';save();render();toast(w.length?p.name+': condition worsening, nurse alerted':'Re-check saved for '+p.name)}
 function inputs(){var pv=document.querySelector('input[name=pain]:checked');if(!pv)return null;var dob=$('dob').value;return{pain:+pv.value,mk:document.querySelector('input[name=mental]:checked').value,age:Math.max(ageFrom(dob),$('sr').checked?65:0),reason:$('reason').value}}
@@ -262,11 +335,13 @@ function suggest(){var q=inputs();if(!q)return null;var x=feats(q.pain,q.mk,q.ag
  return{lvl:c+1,p:p,why:why}}
 function aiRender(){$('ageNote').textContent=$('sr').checked?'Flagged as 65+ priority. The assigned nurse will be alerted and the patient moves up the list.':'';
  var s=suggest(),el=$('ai');
- if(!s){el.innerHTML='<b>AI triage suggestion</b><p class="hint">Select a pain level and the model will suggest an acuity.</p>';return}
+ if(!s){el.innerHTML='<b>No suggestion yet</b><p class="hint">Select a pain level to generate an AI acuity suggestion and rationale.</p>';$('overrideWrap').hidden=true;return}
  var L=LEVELS[s.lvl],q=inputs();
- el.innerHTML='<b>AI suggests: <span style="color:'+L.c+'">'+L.t+'</span> ('+Math.round(100*s.p[s.lvl-1])+'% confident)</b>'+
+ var pct=Math.round(100*s.p[s.lvl-1]),band=pct>=75?'High':pct>=55?'Medium':'Low';
+ el.innerHTML='<span class="step-kicker">Model recommendation</span><b>Suggested acuity: <span style="color:'+L.c+'">'+L.t+'</span></b><p class="hint"><strong style="color:var(--ink)">Confidence: '+band+'</strong> ('+pct+'%)</p>'+
  [1,2,3].map(function(l){var v=Math.round(100*s.p[l-1]);return '<div class="pb" style="--c:'+LEVELS[l].c+'"><span>'+LEVELS[l].t+'</span><i><u style="width:'+v+'%"></u></i><span>'+v+'%</span></div>'}).join('')+
- '<p class="hint">'+esc(whyText(q.pain,q.mk,ageFrom($('dob').value),q.age>=65,q.reason,s.lvl))+'</p><button type="button" class="btn ghost" data-useai="'+s.lvl+'">Use suggestion</button><p class="hint">Decision support only. The nurse makes the final call. Model: logistic regression trained in your browser on '+MODEL.n+' synthetic cases, '+MODEL.acc+'% accurate on held-out cases.</p>'}
+ '<p class="hint"><strong style="color:var(--ink)">Why:</strong> '+esc(whyText(q.pain,q.mk,ageFrom($('dob').value),q.age>=65,q.reason,s.lvl))+'</p><button type="button" class="btn ghost" data-useai="'+s.lvl+'">Use suggestion</button><p class="hint">Decision support only; it does not set final acuity. Model trained on '+MODEL.n+' synthetic cases; '+MODEL.acc+'% held-out accuracy.</p>';
+ var f=document.querySelector('input[name=tri]:checked');$('overrideWrap').hidden=!f||+f.value===s.lvl}
 function ageFrom(d){return d?Math.floor((Date.now()-new Date(d))/31557600000):0}
 function whyText(pain,mk,age,sen,reason,lvl){
  var up=[],down=[],w=painWord(pain).toLowerCase();
@@ -285,8 +360,19 @@ function save(){try{localStorage.setItem('ward3w',JSON.stringify(patients))}catc
 function load(nid){return patients.filter(function(p){return p.nurse===nid}).length}
 function bedTaken(bid){return patients.some(function(p){return p.bed===bid})}
 function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('show')},2800)}
-function nurseName(id){return NURSES.filter(function(n){return n.id===id})[0].name}
+function nurseName(id){var n=NURSES.filter(function(x){return x.id===id})[0];return n?n.name:'Unassigned'}
 function time(ts){return new Date(ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+function reassessMs(lvl){return(lvl===3?15:lvl===2?30:60)*60000}
+function dueAt(p){return p.reassessAt||((p.lastReassessed||p.at)+reassessMs(p.lvl))}
+function waitText(ts){var m=Math.max(0,Math.floor((Date.now()-ts)/60000));return m<1?'Just arrived':m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'m'}
+function dueText(p){var m=Math.ceil((dueAt(p)-Date.now())/60000);return m<0?Math.abs(m)+' min overdue':m===0?'Due now':m<60?'Due in '+m+' min':'Due in '+Math.floor(m/60)+'h '+(m%60)+'m'}
+function statusOf(p){if(p.worse||dueAt(p)<=Date.now())return'Re-check needed';return p.status||'Assigned'}
+function statusOptions(current){return['Waiting','In triage','Assigned','Re-check needed','Ready for discharge'].map(function(s){return'<option'+(s===current?' selected':'')+'>'+s+'</option>'}).join('')}
+function nurseOptions(current){return NURSES.map(function(n){return'<option value="'+n.id+'"'+(n.id===current?' selected':'')+'>'+esc(n.name)+' ('+load(n.id)+'/'+MAXLOAD+')</option>'}).join('')}
+function bedOptions(current){return BEDS.filter(function(b){return b.id===current||!bedTaken(b.id)}).map(function(b){return'<option value="'+b.id+'"'+(b.id===current?' selected':'')+'>Bay '+b.bay+', bed '+b.id+'</option>'}).join('')}
+function chartUI(p){if(chart!==p.id)return'';var ai=p.aiLvl?LEVELS[p.aiLvl].t:'Not recorded';return'<div class="chart-panel"><div class="chart-grid"><div><span>Reason for visit</span><p>'+esc(p.reason||'No reason given')+'</p></div><div><span>Assessment</span><p>Pain '+(typeof p.pain==='number'?p.pain:'—')+'/10 · '+(mentalOf(p.mental)?mentalOf(p.mental).t:'Not recorded')+'</p></div><div><span>Assignment</span><p>Bed '+esc(p.bed||'—')+' · '+esc(nurseName(p.nurse))+'</p></div><div><span>AI suggestion</span><p>'+ai+'</p></div><div><span>Final nurse decision</span><p>'+LEVELS[p.lvl].t+(p.overrideReason?' · '+esc(p.overrideReason):'')+'</p></div><div><label for="st-'+p.id+'" style="margin:0">Care status</label><select id="st-'+p.id+'" data-status="'+p.id+'">'+statusOptions(p.status||'Assigned')+'</select></div></div><p class="hint"><strong>Clinical rationale:</strong> '+esc(p.why||'Not recorded')+'</p></div>'}
+function assignUI(p){if(assigning!==p.id)return'';return'<div class="assign-panel"><label>Nurse<select id="asN-'+p.id+'">'+nurseOptions(p.nurse)+'</select></label><label>Bed<select id="asB-'+p.id+'">'+bedOptions(p.bed)+'</select></label><button class="btn ghost" data-saveassign="'+p.id+'">Save assignment</button></div>'}
+function saveAssignment(id){var p=patients.filter(function(x){return x.id===id})[0];if(!p)return;var n=$('asN-'+id).value,b=$('asB-'+id).value;if(!n||!b)return;p.nurse=n;p.bed=b;p.status='Assigned';assigning='';save();render();toast('Assignment updated for '+p.name)}
 
 function render(){
   var open=BEDS.filter(function(b){return !bedTaken(b.id)});
@@ -317,8 +403,9 @@ function render(){
   $('nurses').innerHTML=NURSES.map(function(n){var l=load(n.id),m='',sp=al.filter(function(p){return p.nurse===n.id}).length;for(var i=0;i<MAXLOAD;i++)m+='<i class="'+(i<l?'on':'')+'"></i>';
     return '<div class="nurse"><b>'+esc(n.name)+'</b><small>'+(l>=MAXLOAD?'At capacity':l+' of '+MAXLOAD+' patients')+'</small>'+(sp?'<small style="display:block;color:var(--r2);font-weight:600">&#9679; '+sp+' priority alert'+(sp>1?'s':'')+'</small>':'')+'<div class="meter'+(l>=MAXLOAD?' full':'')+'">'+m+'</div></div>'}).join('');
 
-  $('pts').innerHTML=patients.length?patients.slice().sort(function(a,b){return b.lvl-a.lvl||(b.senior?1:0)-(a.senior?1:0)||a.at-b.at}).map(function(p){
-    return '<div class="pt"><span class="dot" style="--c:'+LEVELS[p.lvl].c+'" title="'+LEVELS[p.lvl].t+'"></span><div><b>'+esc(p.name)+'</b> <span style="color:var(--muted)">'+esc(p.mrn)+'</span>'+(p.senior?' <span class="badge">65+ priority</span>':'')+'</div><span><button class="btn ghost" data-re="'+p.id+'">Re-check</button> <button class="btn ghost" data-out="'+p.id+'">Discharge</button></span><div class="meta">'+esc(p.reason||'No reason given')+(typeof p.pain==='number'?'<br><span style="color:'+painColor(p.pain)+'">&#9679;</span> Pain '+p.pain+'/10, '+painWord(p.pain).toLowerCase():'')+(mentalOf(p.mental)?'<br><span style="color:'+mentalOf(p.mental).c+'">&#9679;</span> '+mentalOf(p.mental).t+', '+mentalOf(p.mental).d:'')+(p.why?'<br><b>Why:</b> '+esc(p.why):'')+'<br>Bed '+p.bed+' with '+esc(nurseName(p.nurse))+', checked in '+time(p.at)+(p.aiLvl?', AI suggested '+LEVELS[p.aiLvl].t:'')+', est. stay '+estNum(p).toFixed(1)+' h'+(p.dob?', DOB '+esc(p.dob):'')+'</div>'+recheckUI(p)+'</div>'}).join(''):'<p class="empty">No patients checked in. Use the form to admit the first one.</p>';
+  $('pts').innerHTML=patients.length?patients.slice().sort(function(a,b){var ao=dueAt(a)<=Date.now()?1:0,bo=dueAt(b)<=Date.now()?1:0;return bo-ao||(b.worse?1:0)-(a.worse?1:0)||b.lvl-a.lvl||(b.senior?1:0)-(a.senior?1:0)||a.at-b.at}).map(function(p){
+    var due=dueAt(p)-Date.now(),dc=due<=0?' overdue':due<=10*60000?' soon':'',status=statusOf(p);
+    return '<div class="pt"><div class="patient-name"><span class="dot" style="--c:'+LEVELS[p.lvl].c+'"></span><div><b>'+esc(p.name)+'</b><small>'+esc(p.mrn)+' · Arrived '+time(p.at)+'</small>'+(p.senior?'<span class="badge" style="margin:5px 0 0">65+ priority</span>':'')+'</div></div><div class="wait"><strong>'+waitText(p.at)+'</strong><small>since arrival</small></div><div class="status-cell"><span class="status-badge">'+esc(status)+'</span></div><div class="recheck-due'+dc+'"><strong>'+dueText(p)+'</strong><small>'+time(dueAt(p))+'</small></div><div class="quick"><span class="priority-badge" style="--c:'+LEVELS[p.lvl].c+';background:'+LEVELS[p.lvl].c+'">'+LEVELS[p.lvl].t+'</span><button class="btn ghost" data-chart="'+p.id+'">'+(chart===p.id?'Close chart':'Open chart')+'</button><button class="btn ghost" data-re="'+p.id+'">Reassess</button><button class="btn ghost" data-assign="'+p.id+'">Assign</button><button class="btn ghost danger" data-out="'+p.id+'" aria-label="Discharge '+esc(p.name)+' and free bed '+esc(p.bed)+'">Discharge</button></div>'+recheckUI(p)+assignUI(p)+chartUI(p)+'</div>'}).join(''):'<div class="queue-empty"><p class="empty">No patients checked in. Use the form to admit the first one.</p></div>';
 }
 
 function checkIn(){
@@ -335,9 +422,9 @@ function checkIn(){
     if(!o.length){err.textContent='No beds are open. Discharge a patient first.';return}
     var bay=rlBay(lvl,o),pref=o.filter(function(b){return b.bay===bay});bid=(pref[0]||o[0]).id}
   var mrn=$('mrn').value.trim()||('MRN-'+Math.floor(100000+Math.random()*900000));
-  patients.push({id:'p'+Date.now(),name:name,dob:$('dob').value,mrn:mrn,reason:$('reason').value.trim(),lvl:lvl,age:age,senior:sen,why:whyText(+pv.value,document.querySelector('input[name=mental]:checked').value,age,sen,$('reason').value,lvl),ack:false,aiLvl:sg.lvl,pain:+pv.value,mental:document.querySelector('input[name=mental]:checked').value,nurse:nid,bed:bid,at:Date.now()});
+  var now=Date.now();patients.push({id:'p'+now,name:name,dob:$('dob').value,mrn:mrn,reason:$('reason').value.trim(),lvl:lvl,age:age,senior:sen,why:whyText(+pv.value,document.querySelector('input[name=mental]:checked').value,age,sen,$('reason').value,lvl),ack:false,aiLvl:sg.lvl,overrideReason:lvl!==sg.lvl?$('overrideReason').value.trim():'',pain:+pv.value,mental:document.querySelector('input[name=mental]:checked').value,nurse:nid,bed:bid,status:'Assigned',at:now,reassessAt:now+reassessMs(lvl)});
   save();
-  ['name','dob','mrn','reason'].forEach(function(k){$(k).value=''});$('sr').checked=false;
+  ['name','dob','mrn','reason','overrideReason'].forEach(function(k){$(k).value=''});$('sr').checked=false;
   $('nurseSel').value='';$('bedSel').value='';picked='';document.getElementById('t1').checked=true;pv.checked=false;$('mn0').checked=true;$('mn0').dispatchEvent(new Event('change',{bubbles:true}));aiRender();$('painTxt').textContent='';
   render();toast(name+' checked in: bed '+bid+', '+nurseName(nid).split(',')[0]+(sen?'. Priority alert sent to the nurse.':''));$('name').focus();
 }
@@ -348,18 +435,22 @@ $('bedSel').onchange=function(){picked=this.value;render()};
 $('dob').addEventListener('input',function(){var a=ageFrom(this.value);if(a>=65)$('sr').checked=true;else if(a>0)$('sr').checked=false});
 $('formWrap').addEventListener('input',aiRender);$('formWrap').addEventListener('change',aiRender);
 document.addEventListener('click',function(e){
-  var u=e.target.closest('[data-useai]');if(u)$('t'+u.dataset.useai).checked=true;
+  var u=e.target.closest('[data-useai]');if(u){$('t'+u.dataset.useai).checked=true;aiRender();toast('AI suggestion copied. Confirm the final nurse decision below.')}
   var k=e.target.closest('[data-ack]');if(k){patients.forEach(function(p){if(p.id===k.dataset.ack)p.ack=true});save();render()}
+  var ch=e.target.closest('[data-chart]');if(ch){chart=chart===ch.dataset.chart?'':ch.dataset.chart;render()}
   var rb=e.target.closest('[data-re]');if(rb){rc=rc===rb.dataset.re?'':rb.dataset.re;render()}
+  var as=e.target.closest('[data-assign]');if(as){assigning=assigning===as.dataset.assign?'':as.dataset.assign;render()}
+  var sa=e.target.closest('[data-saveassign]');if(sa)saveAssignment(sa.dataset.saveassign);
   var sv=e.target.closest('[data-save]');if(sv)saveRecheck(sv.dataset.save);
   var b=e.target.closest('[data-bed]'),d=e.target.closest('[data-out]');
   if(b){picked=picked===b.dataset.bed?'':b.dataset.bed;$('bedSel').value=picked;render()}
   if(d){var p=patients.filter(function(x){return x.id===d.dataset.out})[0];patients=patients.filter(function(x){return x.id!==d.dataset.out});save();render();toast(p.name+' discharged. Bed '+p.bed+' is open.')}
 });
+document.addEventListener('change',function(e){var id=e.target.dataset.status;if(id){var p=patients.filter(function(x){return x.id===id})[0];if(p){p.status=e.target.value;if(p.status==='Re-check needed')p.reassessAt=Date.now();save();render();toast('Status updated for '+p.name)}}});
 buildMental();buildPain();
 try{(function(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=$('mic');if(!SR)return;b.hidden=false;var rec=null;
  b.onclick=function(){if(rec){rec.stop();return}rec=new SR();rec.lang='en-US';rec.onresult=function(e){$('reason').value=e.results[0][0].transcript;aiRender()};rec.onend=rec.onerror=function(){rec=null;b.textContent='Dictate reason'};b.textContent='Listening... tap to stop';rec.start()}})()}catch(e){}
-render();aiRender();
+render();aiRender();setInterval(render,60000);
 })();
 </script>
 </body>
